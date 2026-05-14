@@ -2,21 +2,28 @@
 
 Author: Parth Verma
 
-This repository collects two production-style deep learning pipelines built in PyTorch:
+This repository contains two PyTorch-based deep learning pipelines:
 
-- **Image classification and interpretability**: a from-scratch ResNet-18 training stack with custom normalization layers, modern augmentation options, checkpointing, metrics, and Grad-CAM visual explanations.
-- **Neural machine translation**: an encoder-decoder NMT system for English-to-Indic translation experiments with attention, BPE target tokenization, GloVe and BERT encoder variants, scheduled teacher forcing, beam search, and BLEU/chrF evaluation.
+- **ResNet image classification** with custom normalization layers, training/evaluation utilities, and Grad-CAM visualizations.
+- **Neural machine translation** with attention-based seq2seq models, GloVe/BERT encoder variants, BPE tokenization, beam search, and BLEU/chrF evaluation.
+
+## Modules
+
+| Module | Focus | Key files |
+| --- | --- | --- |
+| `vision_resnet/` | Image classification and interpretability | `train.py`, `evaluate.py`, `generate_gradcam.py`, `vision/` |
+| `nmt_seq2seq/` | English-to-Indic neural machine translation | `scripts/train.py`, `scripts/evaluate.py`, `inference.py`, `nmt/` |
 
 ## Repository Layout
 
 ```text
 .
-├── vision_resnet/          # ResNet-18 image classification experiments
+├── vision_resnet/
 │   ├── vision/             # datasets, transforms, model, metrics, training engine
-│   ├── train.py            # training entry point
-│   ├── evaluate.py         # checkpoint evaluation
-│   └── generate_gradcam.py # Grad-CAM visualizations
-├── nmt_seq2seq/            # English-to-Indic neural machine translation
+│   ├── train.py            # train ResNet-18 variants
+│   ├── evaluate.py         # evaluate saved checkpoints
+│   └── generate_gradcam.py # generate Grad-CAM visualizations
+├── nmt_seq2seq/
 │   ├── nmt/                # data, model, decoding, metrics, training utilities
 │   ├── configs/            # experiment configs for GloVe/BERT/attention variants
 │   ├── scripts/            # training, evaluation, and data inspection CLIs
@@ -26,16 +33,14 @@ This repository collects two production-style deep learning pipelines built in P
 
 ## Highlights
 
-- Implemented ResNet-18 without relying on torchvision model definitions.
-- Added interchangeable normalization strategies: BatchNorm, InstanceNorm, Batch-InstanceNorm, LayerNorm, GroupNorm, and no-normalization baselines.
-- Built an image preprocessing stack with random crops, horizontal flips, Cutout, MixUp, AutoAugment-style policies, and optional PCA color augmentation.
-- Added Grad-CAM tooling to inspect successful and failed predictions.
-- Implemented an attention-based seq2seq translation model with configurable GloVe or BERT encoders.
-- Built tokenizer/vocabulary pipelines, teacher-forcing schedules, beam search decoding, and generation metrics.
+- ResNet-18 implementation in PyTorch without relying on torchvision model definitions.
+- Interchangeable normalization strategies: BatchNorm, InstanceNorm, Batch-InstanceNorm, LayerNorm, GroupNorm, and no-normalization baselines.
+- Image preprocessing and augmentation support for random crops, flips, Cutout, MixUp, AutoAugment-style policies, and optional PCA color augmentation.
+- Grad-CAM tooling for inspecting successful and failed predictions.
+- Attention-based seq2seq translation with configurable GloVe and BERT encoder variants.
+- Tokenizer/vocabulary pipelines, teacher-forcing schedules, beam-search decoding, and generation metrics.
 
-## Quick Start
-
-Create an environment and install dependencies:
+## Setup
 
 ```bash
 python -m venv .venv
@@ -43,7 +48,11 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Train a vision model:
+Datasets, checkpoints, and large generated artifacts are intentionally kept outside the repository. The training and inference commands expect local paths to those files.
+
+## Vision Pipeline
+
+Train a ResNet variant:
 
 ```bash
 cd vision_resnet
@@ -56,6 +65,27 @@ python train.py \
   --amp
 ```
 
+Evaluate a checkpoint:
+
+```bash
+python evaluate.py \
+  --checkpoint outputs/resnet18_gn/checkpoint_best.pt \
+  --data-root /path/to/imagenet-style-data \
+  --split val
+```
+
+Generate Grad-CAM outputs:
+
+```bash
+python generate_gradcam.py \
+  --checkpoint outputs/resnet18_gn/checkpoint_best.pt \
+  --data-root /path/to/imagenet-style-data \
+  --output-dir outputs/gradcam \
+  --split val
+```
+
+## Translation Pipeline
+
 Train a translation model:
 
 ```bash
@@ -64,10 +94,17 @@ python scripts/train.py \
   --config configs/en_hi_bert_finetune_attn_sched_final40.json
 ```
 
-Run translation inference with a trained checkpoint bundle:
+Evaluate a checkpoint:
 
 ```bash
-cd nmt_seq2seq
+python scripts/evaluate.py \
+  --config configs/en_hi_bert_finetune_attn_sched_final40.json \
+  --checkpoint outputs/en_hi_bert_finetune_attn_sched/checkpoint_best.pt
+```
+
+Run batch inference:
+
+```bash
 python inference.py \
   --input /path/to/input.csv \
   --output predictions.csv \
@@ -75,3 +112,4 @@ python inference.py \
   --mode 4 \
   --decoding_strategy beam
 ```
+
