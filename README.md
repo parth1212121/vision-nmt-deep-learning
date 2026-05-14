@@ -7,8 +7,6 @@ This repository collects two production-style deep learning pipelines built in P
 - **Image classification and interpretability**: a from-scratch ResNet-18 training stack with custom normalization layers, modern augmentation options, checkpointing, metrics, and Grad-CAM visual explanations.
 - **Neural machine translation**: an encoder-decoder NMT system for English-to-Indic translation experiments with attention, BPE target tokenization, GloVe and BERT encoder variants, scheduled teacher forcing, beam search, and BLEU/chrF evaluation.
 
-The code is organized as a research engineering project: reusable modules, JSON-configured experiments, command-line entry points, cached preprocessing, saved tokenizer artifacts, and training/evaluation utilities.
-
 ## Repository Layout
 
 ```text
@@ -77,8 +75,3 @@ python inference.py \
   --mode 4 \
   --decoding_strategy beam
 ```
-
-## CV-Friendly Summary
-
-**Deep Learning Systems: Vision and Neural Machine Translation**  
-Built PyTorch pipelines for ResNet-based image classification with custom normalization/Grad-CAM interpretability and attention-based English-to-Indic neural machine translation with BERT/GloVe encoders, BPE tokenization, beam search, and BLEU/chrF evaluation.
